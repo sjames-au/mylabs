@@ -1,0 +1,6 @@
+vpc_cidr_block              = "172.17.0.0/16"
+vpc_public_subnet_a_cidr    = "172.17.32.0/20"
+vpc_private_subnet_a_cidr   = "172.17.0.0/19"
+vpc_protected_subnet_a_cidr = "172.17.48.0/21"
+vpc_mgmt_subnet_a_cidr      = "172.17.56.0/22"
+vpc_cvpn_subnet_a_cidr      = "172.17.60.0/22"
