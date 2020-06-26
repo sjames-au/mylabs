@@ -1,0 +1,10 @@
+source_up
+export TF_VAR_logz_secret_id="Name/id for logz secret"
+export TF_VAR_bastion_ddns_secret_id="Rname for bastion secret"
+export TF_VAR_logz_endpoint="logz.io endpoint"
+export TF_VAR_allow_admin_cidr="Usually a /32 of your current IP"
+export TF_VAR_bastion_key="Existing key name for ssh access to basion"
+export TF_VAR_bastion_fqdn="The bastion fqdn"
+export TF_VAR_bastion_ddns_server="Your ddhclient service"
+
+# TODO Potential to push all bastion variables into a 1password secret
