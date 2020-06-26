@@ -7,6 +7,8 @@
 .SHELL := /bin/bash
 .PHONY: ALL
 .DEFAULT_GOAL := help
+AWS_PROFILE = ${TF_VAR_aws_profile}
+BASTION_KEY_NAME = ${TF_VAR_vpc_name}
 
 help:
 	@echo "Available targets:"
@@ -45,6 +47,14 @@ tear_bastion_down: ## Destory Bastion and NAT service
 	cd services/nat-instance && \
 	terraform init && \
 	direnv exec . terraform destroy
+
+gen_ssh_key:
+	aws --profile $(AWS_PROFILE) ec2 create-key-pair --key-name $(BASTION_KEY_NAME) --query 'KeyMaterial' --output text > private/bastion.pem && \
+	chmod 600 private/bastion.pem
+
+destory_ssh_key:
+	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_KEY_NAME) && \
+	rm private/bastion.pem
 
 # Save me from myself if I am not running on MacOS - abort
 UNAME_S := $(shell uname -s)
