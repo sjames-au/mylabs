@@ -1,8 +1,7 @@
 # Originally from: https://github.com/katapultmedia/training-drying-up-terraform
 
+# TODO explore aws cli `aws ec2-instance-connect send-ssh-public-key help`
 # TODO check one password is signed in before execution
-# TODO Add a SSH key an generation action
-# TODO Add a ssh trusted host clearer action
 .ONESHELL:
 .SHELL := /bin/bash
 .PHONY: ALL
@@ -38,24 +37,23 @@ tear_vpc_down: os_test ## Remove VPC and subnets
 	terraform init && \
 	terraform destroy
 
-bastion: bootstrap_vpc ## Bring up bastion and NAT service
+bastion: gen_ssh_key bootstrap_vpc ## Bring up bastion and NAT service
 	cd services/nat-instance && \
 	terraform init && \
-	direnv exec . terraform apply && \
-	echo "Remember - ssh-keygen -R _BASTION_"
+	direnv exec . terraform apply -var 'bastion_key=${BASTION_FQDN}'
 
-tear_bastion_down: ## Destory Bastion and NAT service
+tear_bastion_down: destory_ssh_key ## Destory Bastion and NAT service
 	cd services/nat-instance && \
 	terraform init && \
-	direnv exec . terraform destroy
+	direnv exec . terraform destroy -var 'bastion_key=${BASTION_FQDN}'
 
-# Generates a keypair for this host and sets up SSH
-gen_ssh_key:
+# Generates a keypair for this host, sets up SSH, sets bastion_key variable
+gen_ssh_key: destory_ssh_key
 	aws --profile $(AWS_PROFILE) ec2 create-key-pair --key-name $(BASTION_FQDN) --query 'KeyMaterial' --output text > tmp/${BASTION_FQDN}.pem && \
 	chmod 600 tmp/$(BASTION_FQDN).pem && \
 	echo "HostName ${BASTION_FQDN}" > ~/.ssh/mylabs.d/${BASTION_FQDN}
 	echo "\tUser ec2-user" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
-	echo "\tIdentityFile $$PWD/tmp/${BASTION_FQDN}" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
+	echo "\tIdentityFile $$PWD/tmp/${BASTION_FQDN}.pem" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
 
 destory_ssh_key:
 	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_FQDN) && \
