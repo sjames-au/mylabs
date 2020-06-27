@@ -59,8 +59,8 @@ gen_ssh_key:
 
 destory_ssh_key:
 	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_FQDN) && \
-	rm tmp/${BASTION_FQDN}.pem && \
-	rm ~/.ssh/mylabs.d/${BASTION_FQDN} && \
+	rm -fP tmp/${BASTION_FQDN}.pem && \
+	rm -fP ~/.ssh/mylabs.d/${BASTION_FQDN} && \
 	ssh-keygen -R ${BASTION_FQDN}
 
 # Save me from myself if I am not running on MacOS - abort
