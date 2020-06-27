@@ -1,7 +1,10 @@
 # Originally from: https://github.com/katapultmedia/training-drying-up-terraform
 
 # TODO explore aws cli `aws ec2-instance-connect send-ssh-public-key help`
-# TODO check one password is signed in before execution
+# TODO Review this https://help.semmle.com/QL/learn-ql/
+# TODO Leverage github actions on pull request
+# TODO identify requirements for a health check e.g. one password signed in, AWS PROFILE set, etc
+
 .ONESHELL:
 .SHELL := /bin/bash
 .PHONY: ALL
@@ -17,9 +20,6 @@ help:
 
 check: ## Run any pre-commit tests you want outside of an acutal commit
 	@pre-commit run -a
-
-# TODO identify requirements and just check everything looks OK
-# init: os_test ## Install required tools for local hygene checks
 
 core: os_test bootstrap_vpc bastion ## Bring up VPC, Subnets, Basion and NAT
 
