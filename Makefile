@@ -8,7 +8,8 @@
 .PHONY: ALL
 .DEFAULT_GOAL := help
 AWS_PROFILE = ${TF_VAR_aws_profile}
-BASTION_KEY_NAME = ${TF_VAR_vpc_name}
+#BASTION_KEY_NAME = ${TF_VAR_vpc_name}
+BASTION_FQDN = $(TF_VAR_bastion_fqdn)
 
 help:
 	@echo "Available targets:"
@@ -48,13 +49,19 @@ tear_bastion_down: ## Destory Bastion and NAT service
 	terraform init && \
 	direnv exec . terraform destroy
 
+# Generates a keypair for this host and sets up SSH
 gen_ssh_key:
-	aws --profile $(AWS_PROFILE) ec2 create-key-pair --key-name $(BASTION_KEY_NAME) --query 'KeyMaterial' --output text > private/bastion.pem && \
-	chmod 600 private/bastion.pem
+	aws --profile $(AWS_PROFILE) ec2 create-key-pair --key-name $(BASTION_FQDN) --query 'KeyMaterial' --output text > tmp/${BASTION_FQDN}.pem && \
+	chmod 600 tmp/$(BASTION_FQDN).pem && \
+	echo "HostName ${BASTION_FQDN}" > ~/.ssh/mylabs.d/${BASTION_FQDN}
+	echo "\tUser ec2-user" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
+	echo "\tIdentityFile $$PWD/tmp/${BASTION_FQDN}" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
 
 destory_ssh_key:
-	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_KEY_NAME) && \
-	rm private/bastion.pem
+	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_FQDN) && \
+	rm tmp/${BASTION_FQDN}.pem && \
+	rm ~/.ssh/mylabs.d/${BASTION_FQDN} && \
+	ssh-keygen -R ${BASTION_FQDN}
 
 # Save me from myself if I am not running on MacOS - abort
 UNAME_S := $(shell uname -s)
