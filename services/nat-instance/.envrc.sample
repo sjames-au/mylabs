@@ -8,3 +8,4 @@ export TF_VAR_bastion_fqdn="The bastion fqdn"
 export TF_VAR_bastion_ddns_server="Your ddhclient service"
 
 # TODO Potential to push all bastion variables into a 1password secret
+# NOTE bastion_fqdn is also set in root envrc

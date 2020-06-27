@@ -1,5 +1,6 @@
 export TF_VAR_OP_SUBDOMAIN="1password_subdomain"
 export TF_VAR_aws_region="Which region should we deploy to"
 export TF_VAR_aws_profile="AWS Credential profile to use"
+export TF_VAR_bastion_fqdn="The bastion fqdn"
 # TODO use this to tag all items in cloud
 export TF_VAR_vpc_name="Purpose of VPC"
