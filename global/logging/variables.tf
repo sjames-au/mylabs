@@ -13,3 +13,9 @@ variable "log_bucket_name" {
   description = "The name for the log bucket"
   default     = "mylabs-log-bucket"
 }
+
+variable "enable_flow_log" {
+  type        = bool
+  description = "Set to True to disable flow logs"
+  default     = false
+}
