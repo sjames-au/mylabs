@@ -1,6 +1,10 @@
-
+# TODO Publish cidrs and ids consistantly
 output "vpc_region" {
   value = var.aws_region
+}
+
+output "vpc_cidr_block" {
+  value = var.vpc_cidr_block
 }
 
 output "vpc_staging_id" {
