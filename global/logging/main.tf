@@ -34,7 +34,6 @@ resource "aws_cloudtrail" "mylabs-staging-trail" {
   enable_log_file_validation    = true
 }
 
-
 resource "aws_kms_key" "mylabs-staging-log-key" {
   description         = "This key is used to encrypt mylabs logging bucket objects"
   enable_key_rotation = true
@@ -43,7 +42,6 @@ resource "aws_kms_key" "mylabs-staging-log-key" {
   policy = data.aws_iam_policy_document.policy.json
 }
 
-# TODO Should attach a lifecycle policy as labs wont require long term storage
 # For self logging you need to use a variable for name as per:
 # https://github.com/terraform-providers/terraform-provider-aws/issues/795#issuecomment-330238089
 resource "aws_s3_bucket" "mylabs-log-bucket" {
@@ -63,6 +61,17 @@ resource "aws_s3_bucket" "mylabs-log-bucket" {
   logging {
     target_bucket = var.log_bucket_name
     target_prefix = "s3"
+  }
+
+  lifecycle_rule {
+    id      = "log"
+    enabled = true
+
+    prefix = "/"
+
+    expiration {
+      days = var.log_bucket_expiration_days
+    }
   }
 
   policy = <<POLICY

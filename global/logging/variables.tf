@@ -19,3 +19,9 @@ variable "enable_flow_log" {
   description = "Set to True to disable flow logs"
   default     = false
 }
+
+variable "log_bucket_expiration_days" {
+  type        = number
+  description = "Number of days to keep logs"
+  default     = 10
+}
