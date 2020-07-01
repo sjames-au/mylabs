@@ -73,6 +73,7 @@ resource "aws_s3_bucket" "mylabs-log-bucket" {
       days = var.log_bucket_expiration_days
     }
   }
+
   policy = <<POLICY
 {
     "Version": "2012-10-17",

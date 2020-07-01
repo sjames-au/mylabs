@@ -1,12 +1,17 @@
 # Originally from: https://github.com/katapultmedia/training-drying-up-terraform
 
-# TODO check one password is signed in before execution
-# TODO Add a SSH key an generation action
-# TODO Add a ssh trusted host clearer action
+# TODO explore aws cli `aws ec2-instance-connect send-ssh-public-key help`
+# TODO Review this https://help.semmle.com/QL/learn-ql/
+# TODO Leverage github actions on pull request
+# TODO identify requirements for a health check e.g. one password signed in, AWS PROFILE set, etc
+
 .ONESHELL:
 .SHELL := /bin/bash
 .PHONY: ALL
 .DEFAULT_GOAL := help
+AWS_PROFILE = ${TF_VAR_aws_profile}
+#BASTION_KEY_NAME = ${TF_VAR_vpc_name}
+BASTION_FQDN = $(TF_VAR_bastion_fqdn)
 
 help:
 	@echo "Available targets:"
@@ -15,9 +20,6 @@ help:
 
 check: ## Run any pre-commit tests you want outside of an acutal commit
 	@pre-commit run -a
-
-# TODO identify requirements and just check everything looks OK
-# init: os_test ## Install required tools for local hygene checks
 
 core: os_test bootstrap_vpc bastion ## Bring up VPC, Subnets, Basion and NAT
 
@@ -35,16 +37,29 @@ tear_vpc_down: os_test ## Remove VPC and subnets
 	terraform init && \
 	terraform destroy
 
-bastion: bootstrap_vpc ## Bring up bastion and NAT service
+bastion: gen_ssh_key bootstrap_vpc ## Bring up bastion and NAT service
 	cd services/nat-instance && \
 	terraform init && \
-	direnv exec . terraform apply && \
-	echo "Remember - ssh-keygen -R _BASTION_"
+	direnv exec . terraform apply -var 'bastion_key=${BASTION_FQDN}'
 
-tear_bastion_down: ## Destory Bastion and NAT service
+tear_bastion_down: destory_ssh_key ## Destory Bastion and NAT service
 	cd services/nat-instance && \
 	terraform init && \
-	direnv exec . terraform destroy
+	direnv exec . terraform destroy -var 'bastion_key=${BASTION_FQDN}'
+
+# Generates a keypair for this host, sets up SSH, sets bastion_key variable
+gen_ssh_key: destory_ssh_key
+	aws --profile $(AWS_PROFILE) ec2 create-key-pair --key-name $(BASTION_FQDN) --query 'KeyMaterial' --output text > tmp/${BASTION_FQDN}.pem && \
+	chmod 600 tmp/$(BASTION_FQDN).pem && \
+	echo "HostName ${BASTION_FQDN}" > ~/.ssh/mylabs.d/${BASTION_FQDN}
+	echo "\tUser ec2-user" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
+	echo "\tIdentityFile $$PWD/tmp/${BASTION_FQDN}.pem" >> ~/.ssh/mylabs.d/${BASTION_FQDN}
+
+destory_ssh_key:
+	aws --profile $(AWS_PROFILE) ec2 delete-key-pair --key-name $(BASTION_FQDN) && \
+	rm -fP tmp/${BASTION_FQDN}.pem && \
+	rm -fP ~/.ssh/mylabs.d/${BASTION_FQDN} && \
+	ssh-keygen -R ${BASTION_FQDN}
 
 # Save me from myself if I am not running on MacOS - abort
 UNAME_S := $(shell uname -s)
