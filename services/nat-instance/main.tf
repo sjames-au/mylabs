@@ -49,6 +49,7 @@ data "aws_ami" "amazon-linux-nat" {
   }
 }
 
+# TODO Seperate VPC SG matters to a seperate list
 resource "aws_security_group" "amazon-nat-sg" {
   name        = "amazon-net-sg"
   description = "Permits access for JumpBox and private network NAT service"
@@ -61,12 +62,12 @@ resource "aws_security_group" "amazon-nat-sg" {
     cidr_blocks = [var.allow_admin_cidr]
   }
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
-  }
+  # ingress {
+  #   from_port   = 80
+  #   to_port     = 80
+  #   protocol    = "tcp"
+  #   cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
+  # }
 
   ingress {
     from_port   = 443
@@ -75,22 +76,49 @@ resource "aws_security_group" "amazon-nat-sg" {
     cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
   }
 
+  # TODO Ensure good logging. Look for access control options
   egress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
+    description = "Allow software retrieval etc"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     #tfsec:ignore:AWS009 Required for NAT services
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
+    description = "Allow software retrieval etc"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     #tfsec:ignore:AWS009 Required for NAT services
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  egress {
+    description = "Bastion: Enable RDP from bastion"
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
+  }
+
+  egress {
+    description = "Bastion: Allow WinRM/s TCP 5986"
+    from_port   = 5986
+    to_port     = 5986
+    protocol    = "tcp"
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
+  }
+
+  # TODO Review, useful for occassional troubleshooting
+  egress {
+    description = "Bastion: Ping... "
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
+  }
 }
 
 # Routing table for mgmt subnet

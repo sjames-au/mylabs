@@ -1,0 +1,61 @@
+---
+- hosts: all # I see a future where this approach will cause me a problem
+  vars_files:
+   - vars.yml
+  tasks:
+  - name: Wait for system to become reachable over WinRM
+    wait_for_connection:
+
+  ## Ensure logging is working from the start of deploy
+  - name: Install WinLogBeat
+    win_chocolatey:
+      name: winlogbeat
+      state: present
+
+  - name: Install LOGZ.IO public certificate
+    win_copy:
+      src: LogzIO.crt
+      dest: C:\ProgramData\chocolatey\lib\winlogbeat\tools\LOGZ.CA.crt
+
+# Copy Template file
+  - name: Install LOGZ.IO WinFileBeat config
+    win_template:
+      src: winlogbeat.yml.j2
+      dest: C:\ProgramData\chocolatey\lib\winlogbeat\tools\winlogbeat.yml
+
+# Restart winlogbeat
+  - name: Restart winlogbeat
+    win_service:
+      name: winlogbeat
+      state: restarted
+
+  - name: Ensure WinRM starts when the system has settled and is ready to work reliably
+    win_service:
+      name: WinRM
+      start_mode: delayed
+
+  - name: Ensure machine is a domain controller
+    win_domain:
+      dns_domain_name: '{{ dns_name }}'
+      safe_mode_password: '{{ safe_mode_password }}'
+    register: check_domain
+
+  - name: Reboot to complete domain setup # noqa 503 Must boot at this point
+    win_reboot:
+    when: check_domain.changed
+
+  - name: Promote a server to a domain controller
+    win_domain_controller:
+      domain_netbios_name: '{{ domain_netbios_name }}'
+      dns_domain_name: '{{ dns_name }}'
+      domain_admin_user: '{{ domain_admin_user }}'
+      domain_admin_password: '{{ domain_admin_password }}'
+      safe_mode_password: '{{ safe_mode_password }}'
+      state: domain_controller
+      log_path: C:\ansible_win_domain_controller.txt
+    register: check_promote
+
+  - name: Reboot to complete promotion setup # noqa 503 Must boot at this point
+    win_reboot:
+    when: check_promote.changed
+

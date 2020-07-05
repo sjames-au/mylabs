@@ -1,0 +1,35 @@
+winlogbeat.event_logs:
+  - name: Application
+    ignore_older: 72h
+  - name: Security
+  - name: System
+
+fields:
+  logzio_codec: json
+  token: {{ logzio_token }}
+  type: wineventlog
+fields_under_root: true
+
+# ... For Winlogbeat 7 only ...
+processors:
+  - rename:
+      fields:
+      - from: "agent"
+        to: "beat_agent"
+      ignore_missing: true
+  - rename:
+      fields:
+      - from: "log.file.path"
+        to: "source"
+      ignore_missing: true
+  - rename:
+      fields:
+      - from: "log"
+        to: "log_information"
+      ignore_missing: true
+
+
+output.logstash:
+  hosts: ["{{logzio_listener}}:5015"]
+  ssl:
+    certificate_authorities: ['C:\ProgramData\chocolatey\lib\winlogbeat\tools\LOGZ.CA.crt']
