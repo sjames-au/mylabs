@@ -4,6 +4,8 @@
 # TODO Review this https://help.semmle.com/QL/learn-ql/
 # TODO Leverage github actions on pull request
 # TODO identify requirements for a health check e.g. one password signed in, AWS PROFILE set, etc
+# TODO Check Terraform on how to remove a SG from an instance before deleting the SG
+# TODO neeed to make the bastion "stickier"
 
 .ONESHELL:
 .SHELL := /bin/bash
