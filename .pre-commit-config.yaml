@@ -7,3 +7,9 @@ repos:
     - id: terraform_tfsec
     - id: terraform_tflint
     - id: terraform_validate
+
+- repo: https://github.com/ansible/ansible-lint.git
+  rev: v4.2.0
+  hooks:
+    - id: ansible-lint
+      files: \.(yaml|yml)$
