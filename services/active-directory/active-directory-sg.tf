@@ -102,4 +102,11 @@ resource "aws_security_group" "activedirectory-ingress-sg" {
     cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
   }
 
+  ingress {
+    description = "WinRM/s Service Access"
+    from_port   = 5986
+    to_port     = 5986
+    protocol    = "tcp"
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
+  }
 }
