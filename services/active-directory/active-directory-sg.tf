@@ -109,4 +109,16 @@ resource "aws_security_group" "activedirectory-ingress-sg" {
     protocol    = "tcp"
     cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_cidr_block]
   }
+
+  ## Egress rules
+  #
+
+  egress {
+    description = "Retrieve software from Internet HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    #tfsec:ignore:AWS009 Required for Software Downloads
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }

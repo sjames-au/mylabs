@@ -69,12 +69,12 @@ resource "aws_security_group" "amazon-nat-sg" {
   #   cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
   # }
 
-  # ingress {
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
-  # }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [data.terraform_remote_state.vpc.outputs.vpc_mgmt_subnet_a_cidr]
+  }
 
   # TODO Ensure good logging. Look for access control options
   egress {
