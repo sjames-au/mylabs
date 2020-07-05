@@ -40,7 +40,7 @@
       safe_mode_password: '{{ safe_mode_password }}'
     register: check_domain
 
-  - name: Reboot to complete domain setup
+  - name: Reboot to complete domain setup # noqa 503 Must boot at this point
     win_reboot:
     when: check_domain.changed
 
@@ -55,7 +55,7 @@
       log_path: C:\ansible_win_domain_controller.txt
     register: check_promote
 
-  - name: Reboot to complete promotion setup
+  - name: Reboot to complete promotion setup # noqa 503 Must boot at this point
     win_reboot:
     when: check_promote.changed
 
